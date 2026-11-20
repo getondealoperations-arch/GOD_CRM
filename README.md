@@ -17,7 +17,7 @@ A complete lead-to-sales CRM for GetOnDeal: lead capture (Meta Lead Ads, import,
 | Sales & ROI | Sales, payments, refunds, booked vs collected; first- or last-touch attribution; ROI on gross profit |
 | Reports | 16 MIS reports with drill-down and CSV/Excel export |
 | Automation | SLA alerts, reminders, escalations, reactivation queue, lead scoring — runs every minute; in-app, email, WhatsApp and SMS notifications |
-| Security & ops | RBAC, audit log, encrypted credentials, consent/DND, anonymisation, retention policy, backups & restore, background jobs, health endpoint, light/dark mode |
+| Security & ops | RBAC, audit log, encrypted credentials, consent/DND, anonymisation, retention policy, Backups & restore, background jobs, health endpoint, light/dark mode |
 
 ## Quick start
 
