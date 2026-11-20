@@ -1,0 +1,70 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@theme {
+  --color-surface: #ffffff;
+  --color-page: #f6f7f9;
+}
+
+/* Dark mode: Tailwind utilities read these variables, so swapping them restyles every page. */
+.dark {
+  color-scheme: dark;
+  --color-surface: #131b2b;
+  --color-page: #0b1120;
+  --color-slate-50: #1a2335;
+  --color-slate-100: #1f2a3d;
+  --color-slate-200: #2b3649;
+  --color-slate-300: #3b475c;
+  --color-slate-400: #6b7a90;
+  --color-slate-500: #94a3b8;
+  --color-slate-600: #a9b5c6;
+  --color-slate-700: #cbd5e1;
+  --color-slate-800: #e2e8f0;
+  --color-slate-900: #f1f5f9;
+  --color-indigo-50: #1e1b4b;
+  --color-indigo-100: #312e81;
+  --color-indigo-600: #6366f1;
+  --color-indigo-700: #a5b4fc;
+  --color-red-50: #2a1215;
+  --color-red-100: #3b1519;
+  --color-red-200: #5c1d22;
+  --color-red-700: #fca5a5;
+  --color-red-800: #fecaca;
+  --color-green-100: #12301f;
+  --color-green-700: #86efac;
+  --color-amber-50: #2a2010;
+  --color-amber-100: #3a2a0e;
+  --color-amber-700: #fcd34d;
+  --color-amber-800: #fde68a;
+  --color-orange-100: #3a1f0e;
+  --color-orange-700: #fdba74;
+  --color-blue-100: #172a4a;
+  --color-blue-700: #93c5fd;
+}
+
+body {
+  background: var(--color-page);
+  color: var(--color-slate-900);
+}
+
+@layer components {
+  .card { @apply rounded-xl border border-slate-200 bg-surface p-4 shadow-sm; }
+  .btn { @apply inline-flex items-center justify-center gap-1 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50 cursor-pointer; }
+  .btn-ghost { @apply inline-flex items-center justify-center gap-1 rounded-lg border border-slate-300 bg-surface px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 cursor-pointer; }
+  .btn-danger { @apply inline-flex items-center justify-center rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-500 cursor-pointer; }
+  .input { @apply w-full rounded-lg border border-slate-300 bg-surface px-2.5 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100; }
+  .label { @apply mb-1 block text-xs font-medium text-slate-500; }
+  .tbl { @apply w-full text-left text-sm; }
+  .tbl th { @apply border-b border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500 whitespace-nowrap; }
+  .tbl td { @apply border-b border-slate-100 px-3 py-2 align-top; }
+  .tbl tr:hover td { @apply bg-slate-50/60; }
+  .badge { @apply inline-block rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap; }
+  .h1 { @apply text-xl font-semibold text-slate-900; }
+  .h2 { @apply text-sm font-semibold text-slate-700 mb-3; }
+  .link { @apply text-indigo-600 hover:underline; }
+}
