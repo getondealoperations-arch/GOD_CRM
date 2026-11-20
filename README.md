@@ -1,4 +1,4 @@
-# GetOnDeal CRM — Lead to Sales & Calling Operations
+# GetOnDeal CRM — Lead to Sales & Calling OperationS
 
 A complete lead-to-sales CRM for GetOnDeal: lead capture (Meta Lead Ads, import, API, manual), calling workspace, follow-ups, sales pipeline, team management, campaigns, revenue & payments, marketing ROI and MIS reports — built from the [Software Requirement Specification](GetOnDeal_CRM_Software_Requirements.pdf).
 
