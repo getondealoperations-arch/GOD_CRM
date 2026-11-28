@@ -31,7 +31,7 @@ export async function FilterBar({ sp, fields, keep = [] }: { sp: SP; fields: Fie
     </div>
   );
 
-  const active = ["q", "from", "to", "campaign", "source", "category", "city", "team", "owner", "stage", "priority", "conversion"].filter((k) => v(k)).length;
+  const active = ["q", "campaign", "source", "category", "city", "team", "owner", "stage", "priority", "conversion"].filter((k) => v(k)).length;
 
   return (
     <FilterToggle active={active}>

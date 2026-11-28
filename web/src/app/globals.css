@@ -38,12 +38,14 @@
 /* Dark mode: Tailwind utilities read these variables, so swapping them restyles every page. */
 .dark {
   color-scheme: dark;
-  --color-surface: #0f1a33;
-  --color-page: #081125;
-  --color-slate-50: #16223f;
-  --color-slate-100: #1b2849;
-  --color-slate-200: #28365a;
-  --color-slate-300: #38486f;
+  /* Depth, darkest to lightest: sidebar < page < card < table header / hover. */
+  --color-ink: #040b21;
+  --color-page: #070f24;
+  --color-surface: #0e1a37;
+  --color-slate-50: #14223f;
+  --color-slate-100: #1a2a4c;
+  --color-slate-200: #263659;
+  --color-slate-300: #384a72;
   --color-slate-400: #6b7ba0;
   --color-slate-500: #93a2c4;
   --color-slate-600: #a8b5d2;
@@ -78,7 +80,16 @@
    implicit auto column past the phone viewport. Base layer, so every sm:/lg:grid-cols-* still wins. */
 @layer base {
   .grid { grid-template-columns: minmax(0, 1fr); }
+  input[type="checkbox"], input[type="radio"] { accent-color: var(--color-indigo-600); }
 }
+
+/* Dark mode refinements. Unlayered on purpose: it must beat the utility classes it adjusts. */
+.dark .link, .dark .text-indigo-600 { color: var(--color-indigo-700); }   /* #3556c0 is too dim on dark cards */
+.dark .input { background-color: var(--color-page); }                     /* fields sit recessed into their card */
+.dark .card { border-color: var(--color-slate-200); }
+.dark .text-red-600 { color: #f87171; }                                    /* red-600 text is ~3.9:1 on dark; buttons (bg-red-600) are unaffected */
+.dark .text-amber-600 { color: #fbbf24; }
+.dark aside { border-right: 1px solid rgb(255 255 255 / 0.06); }          /* the sidebar is darker than the page: give it an edge */
 
 body {
   background: var(--color-page);
