@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title: "GetOnDeal CRM",
   description: "Lead-to-sales and calling operations CRM",
 };
-export const viewport: Viewport = { width: "device-width", initialScale: 1 };
+export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#021d52" };
 
 // No saved choice → follow the OS setting (runs before paint, so no flash).
 const systemTheme = `if(window.matchMedia("(prefers-color-scheme: dark)").matches)document.documentElement.classList.add("dark")`;
