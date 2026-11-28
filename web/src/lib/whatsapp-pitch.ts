@@ -1,7 +1,9 @@
 // The Get On Deal vendor intro that agents send on WhatsApp after a call. Pure functions (no server imports) so the call panel can use them in the browser.
-// One click opens WhatsApp with the message ready; the agent taps Send. (Sending with no tap needs the paid WhatsApp Business API and an approved template.)
+// One click copies the finished message and opens the customer's chat; the agent pastes and taps Send.
+// Why not pre-fill the text in the link: WhatsApp's desktop app turns emoji sent that way into ◆? and builds no video preview card.
+// Pasting keeps every emoji and makes WhatsApp create the YouTube card. (Sending with no tap needs the paid WhatsApp Business API and an approved template.)
 
-export const GOD_VIDEO_URL = "https://youtu.be/guK3uzrsYCc";
+export const GOD_VIDEO_URL = "https://youtu.be/guK3uzrsYCc?si=3bf--_lATUyVD4-j";
 export const GOD_PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.getondeal.app";
 export const GOD_APP_STORE_URL = "https://apps.apple.com/in/app/get-on-deal/id6818108507";
 
@@ -52,8 +54,8 @@ Here’s how the GOD vendor partnership works:
 👉 ${GOD_VIDEO_URL}
 
 📱 Explore Get On Deal & Download the App:
-🤖 Android: ${GOD_PLAY_STORE_URL}
-🍎 iPhone: ${GOD_APP_STORE_URL}
+👉 ${GOD_PLAY_STORE_URL}
+👉 ${GOD_APP_STORE_URL}
 
 If you feel this partnership can add value to your ${word}, we can take the next step and discuss the member offer + listing details. 🤝
 
@@ -73,8 +75,8 @@ export function whatsappNumber(mobile: string | null | undefined): string | null
   return /^[6-9]\d{9}$/.test(d) ? d : null;
 }
 
-/** wa.me link that opens the chat with the personalised message filled in, or null when the number cannot have WhatsApp. */
-export function pitchLink(mobile: string | null | undefined, lead: PitchLead): string | null {
+/** wa.me link that opens this customer's chat (no text: the message is pasted), or null when the number cannot have WhatsApp. */
+export function chatLink(mobile: string | null | undefined): string | null {
   const n = whatsappNumber(mobile);
-  return n ? `https://wa.me/91${n}?text=${encodeURIComponent(pitchMessage(lead))}` : null;
+  return n ? `https://wa.me/91${n}` : null;
 }

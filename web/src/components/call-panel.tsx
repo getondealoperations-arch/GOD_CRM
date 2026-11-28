@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { clickToCallAction, logCall, logWhatsAppOpened } from "@/app/(app)/actions";
 import type { Row } from "@/lib/db";
-import { pitchLink } from "@/lib/whatsapp-pitch";
+import { chatLink, pitchMessage } from "@/lib/whatsapp-pitch";
 
 const DISPOSITIONS = [
   "Connected", "Not Answered", "Busy", "Switched Off", "Invalid Number", "Call Back Requested",
@@ -29,11 +29,17 @@ export function CallPanel({ lead, stages, next, telephony }: { lead: Row; stages
   };
   const [dispo, setDispo] = useState("");
   const [fu, setFu] = useState("");
-  // One-tap WhatsApp intro: personalised wa.me link. Respect Do-Not-Disturb and a stated channel preference; landlines have no WhatsApp.
-  const wa = pitchLink(lead.mobile, lead);
+  // One-tap WhatsApp intro: copy the personalised message, open the customer's chat, the agent pastes and sends. Pasting (not a pre-filled link)
+  // keeps every emoji and makes WhatsApp build the YouTube card. Respect Do-Not-Disturb and a stated channel preference; landlines have no WhatsApp.
+  const wa = chatLink(lead.mobile);
   const waBlock = lead.dnd ? "is on Do-Not-Disturb" : lead.comm_pref && !String(lead.comm_pref).split(",").includes("whatsapp") ? "asked not to be contacted on WhatsApp" : null;
   const callEnded = !start && (elapsed > 0 || !!dispo);
-  const openWhatsApp = () => { void logWhatsAppOpened(lead.id); };
+  const [waCopy, setWaCopy] = useState<"" | "copied" | "failed">("");
+  const openWhatsApp = () => {
+    const copied = navigator.clipboard ? navigator.clipboard.writeText(pitchMessage(lead)) : Promise.reject(new Error("no clipboard"));
+    copied.then(() => setWaCopy("copied"), () => setWaCopy("failed"));
+    void logWhatsAppOpened(lead.id);
+  };
   useEffect(() => {
     if (!start) return;
     const t = setInterval(() => setElapsed(Math.round((Date.now() - start) / 1000)), 1000);
@@ -58,7 +64,7 @@ export function CallPanel({ lead, stages, next, telephony }: { lead: Row; stages
           : <a href={`tel:${lead.mobile}`} onClick={() => { setStart(Date.now()); setElapsed(0); }} className="btn bg-green-600 hover:bg-green-500">📞 Call {lead.mobile}</a>}
         {lead.alt_mobile && <a href={`tel:${lead.alt_mobile}`} className="btn-ghost">Alt: {lead.alt_mobile}</a>}
         {wa && !waBlock
-          ? <a href={wa} target="_blank" rel="noreferrer" onClick={openWhatsApp} className="btn-ghost" title="Opens WhatsApp with the Get On Deal intro, ready to send">WhatsApp</a>
+          ? <a href={wa} target="_blank" rel="noreferrer" onClick={openWhatsApp} className="btn-ghost" title="Copies the Get On Deal intro and opens this customer's WhatsApp chat. Paste it there and press Send.">WhatsApp</a>
           : <span className="text-xs text-slate-500">{waBlock ? `No WhatsApp: customer ${waBlock}` : "No WhatsApp: this looks like a landline"}</span>}
         <span className="text-sm tabular-nums text-slate-600" aria-live="polite">
           {start ? `⏱ ${Math.floor(elapsed / 60)}:${String(elapsed % 60).padStart(2, "0")}` : elapsed ? `Duration ${Math.round(elapsed / 60)} min` : ""}
@@ -69,6 +75,17 @@ export function CallPanel({ lead, stages, next, telephony }: { lead: Row; stages
         <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-green-200 bg-green-100 p-2.5 text-sm text-green-700" role="status">
           <span>Call ended. Send {lead.name} the Get On Deal intro, with the video and app links.</span>
           <a href={wa} target="_blank" rel="noreferrer" onClick={openWhatsApp} className="btn bg-green-600 text-white hover:bg-green-500">Send on WhatsApp</a>
+        </div>
+      )}
+      {waCopy === "copied" && (
+        <p role="status" className="rounded-lg border border-green-200 bg-green-100 p-2 text-xs text-green-700">
+          Message copied. In the WhatsApp chat that just opened, paste it (⌘V on a Mac, Ctrl+V on Windows, or touch and hold on a phone) and press Send.
+        </p>
+      )}
+      {waCopy === "failed" && (
+        <div className="space-y-1">
+          <p role="alert" className="text-xs text-amber-800">Could not copy automatically. Copy the message below, paste it into the WhatsApp chat and press Send.</p>
+          <textarea readOnly rows={6} value={pitchMessage(lead)} onFocus={(e) => e.currentTarget.select()} aria-label="WhatsApp message" className="input text-xs" />
         </div>
       )}
       {telMsg && <p className="text-xs text-slate-600" aria-live="polite">{telMsg}</p>}
