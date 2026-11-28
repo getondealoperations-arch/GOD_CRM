@@ -150,7 +150,8 @@ export async function createLead(input: LeadInput, actorId: number | null, opts:
   return id;
 }
 
-export async function assignLead(leadId: number, userId: number | null, actorId: number | null) {
+/** `quiet` skips the per-lead notification; bulk callers (split & assign) send one summary instead. */
+export async function assignLead(leadId: number, userId: number | null, actorId: number | null, opts: { quiet?: boolean } = {}) {
   const lead = await one("SELECT l.owner_id, l.name, s.name stage FROM leads l JOIN stages s ON s.id=l.stage_id WHERE l.id=?", [leadId]);
   if (!lead || lead.owner_id === userId) return;
   await exec("UPDATE leads SET owner_id=?, assigned_at=NOW(), sla_alerted=0 WHERE id=?", [userId, leadId]);
@@ -160,7 +161,7 @@ export async function assignLead(leadId: number, userId: number | null, actorId:
   const to = userId ? (await one("SELECT name FROM users WHERE id=?", [userId]))?.name : "Unassigned";
   await activity(leadId, actorId, "assign", `Assigned to ${to}`);
   await audit(actorId, "assign", "lead", leadId, { from: lead.owner_id, to: userId });
-  if (userId) await notify(userId, `Lead assigned to you: ${lead.name}`, `/leads/${leadId}`);
+  if (userId && !opts.quiet) await notify(userId, `Lead assigned to you: ${lead.name}`, `/leads/${leadId}`);
 }
 
 /**

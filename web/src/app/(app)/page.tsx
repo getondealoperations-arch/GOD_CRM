@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { requireUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { FIELD_ROLES, requireUser } from "@/lib/auth";
 import { q } from "@/lib/db";
 import { filterQuery, leadWhere, type SP } from "@/lib/filters";
 import { inr, pct, ratio } from "@/lib/metrics";
@@ -9,6 +10,7 @@ import { num, Stat } from "@/components/ui";
 
 export default async function Dashboard({ searchParams }: PageProps<"/">) {
   const u = await requireUser();
+  if (FIELD_ROLES.includes(u.role)) redirect("/work"); // front-line staff work from "My work", not the manager dashboard
   const sp = withRange((await searchParams) as SP);
   const { from, to } = dateRange(sp);
   const cohort = leadWhere(u, sp);

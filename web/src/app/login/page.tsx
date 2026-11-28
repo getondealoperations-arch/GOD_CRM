@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { currentUser, startSession, verifyPassword } from "@/lib/auth";
 import { audit, one } from "@/lib/db";
@@ -51,6 +52,7 @@ export default async function Login({ searchParams }: PageProps<"/login">) {
           <div><label className="label" htmlFor="email">Email</label><input id="email" name="email" type="email" required autoFocus className="input py-2" autoComplete="username" /></div>
           <div><label className="label" htmlFor="password">Password</label><input id="password" name="password" type="password" required className="input py-2" autoComplete="current-password" /></div>
           <button className="btn w-full py-2">Sign in</button>
+          <p className="text-center text-sm text-slate-500">Calling or sales employee? <Link href="/employee/login" className="link">Employee sign in</Link></p>
         </form>
       </section>
     </main>

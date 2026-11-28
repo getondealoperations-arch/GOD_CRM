@@ -46,6 +46,7 @@ export default async function Leads({ searchParams }: PageProps<"/leads">) {
             <a className="btn-ghost" href={`/api/export?${filterQuery(sp, { format: "csv" })}`}>Export CSV</a>
             <a className="btn-ghost" href={`/api/export?${filterQuery(sp, { format: "xlsx" })}`}>Export Excel</a>
           </>}
+          {can(u, "lead.assign") && <Link href="/leads/distribute" className="btn-ghost">Split and assign</Link>}
           {can(u, "lead.import") && <Link href="/leads/import" className="btn-ghost">Import</Link>}
           {can(u, "lead.create") && <Link href="/leads/new" className="btn">+ New lead</Link>}
         </div>

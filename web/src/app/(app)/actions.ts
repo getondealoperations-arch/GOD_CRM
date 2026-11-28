@@ -620,6 +620,44 @@ export async function reassignOpenLeads(f: FormData) {
   done();
 }
 
+/**
+ * Split & assign: deal a pool of unassigned open leads equally across the chosen employees.
+ * Best-scored leads are dealt first, one per person in turn, so everyone gets a fair mix of hot and cold leads.
+ * ponytail: ignores each person's daily_lead_cap (the manager chose them explicitly); add a cap check if that bites.
+ */
+export async function splitAssign(f: FormData) {
+  const u = await requireUser("lead.assign");
+  const sc = leadScope(u);
+  const ids = f.getAll("emp").map(Number).filter(Boolean);
+  if (!ids.length) redirect("/leads/distribute?error=Pick+at+least+one+employee");
+
+  // Only active, available people the manager is allowed to hand work to (a team leader: their own team).
+  const team = can(u, "lead.view_all") ? "" : ` AND team_id=${Number(u.team_id ?? -1)}`;
+  const emps = await q<{ id: number }>(
+    `SELECT id FROM users WHERE id IN (?) AND active=1 AND available=1 AND role IN ('calling_executive','sales_executive','team_leader')${team} ORDER BY id`, [ids]);
+  if (!emps.length) redirect("/leads/distribute?error=None+of+the+selected+employees+can+take+leads+right+now");
+
+  const where = ["l.owner_id IS NULL", "s.is_won=0", "s.is_lost=0", sc.sql];
+  const params: (string | number)[] = [...sc.params];
+  for (const k of ["campaign_id", "source", "city", "category"] as const) {
+    if (s(f, k)) { where.push(`l.${k}=?`); params.push(s(f, k)); }
+  }
+  const limit = Math.min(Math.max(Number(s(f, "limit")) || 500, 1), 500);
+  const leads = await q<{ id: number }>(
+    `SELECT l.id FROM leads l JOIN stages s ON s.id=l.stage_id WHERE ${where.join(" AND ")} ORDER BY l.score DESC, l.created_at LIMIT ${limit}`, params);
+
+  const got = new Map<number, number>();
+  for (const [i, l] of leads.entries()) {
+    const to = emps[i % emps.length].id;
+    await assignLead(l.id, to, u.id, { quiet: true });
+    got.set(to, (got.get(to) ?? 0) + 1);
+  }
+  for (const [to, count] of got) await notify(to, `${count} new lead${count === 1 ? "" : "s"} assigned to you by ${u.name}`, "/work");
+  await audit(u.id, "split_assign", "lead", null, { employees: emps.map((e) => e.id), assigned: leads.length, split: Object.fromEntries(got) });
+  done();
+  redirect(`/leads/distribute?done=${leads.length}`);
+}
+
 /** Click-to-call through the cloud telephony provider. Returns the call row id the call panel completes on save. */
 export async function clickToCallAction(leadId: number): Promise<{ callId?: number; error?: string }> {
   const u = await requireUser("calls.log");

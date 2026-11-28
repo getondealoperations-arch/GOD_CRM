@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { can, requireUser, ROLE_LABEL, type Perm } from "@/lib/auth";
+import { can, FIELD_ROLES, requireUser, ROLE_LABEL, type Perm } from "@/lib/auth";
 import { one } from "@/lib/db";
 import { logout } from "./actions";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -8,7 +8,9 @@ import { NavLinks } from "@/components/nav-links";
 
 const NAV: { href: string; label: string; perm?: Perm }[] = [
   { href: "/", label: "Dashboard" },
+  { href: "/work", label: "My work", perm: "calls.log" },
   { href: "/leads", label: "Leads" },
+  { href: "/leads/distribute", label: "Split & assign", perm: "lead.assign" },
   { href: "/pipeline", label: "Pipeline" },
   { href: "/calling", label: "Calling Workspace", perm: "calls.log" },
   { href: "/followups", label: "Follow-ups" },
@@ -24,7 +26,11 @@ const NAV: { href: string; label: string; perm?: Perm }[] = [
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const u = await requireUser();
   const unread = (await one("SELECT COUNT(*) c FROM notifications WHERE user_id=? AND read_at IS NULL", [u.id]))!.c;
-  const nav = NAV.filter((n) => !n.perm || can(u, n.perm));
+  // Front-line employees get a slim menu: their own work, leads, calls and follow-ups (plus pipeline and sales if they book sales).
+  const slim = FIELD_ROLES.includes(u.role);
+  const SLIM = ["/work", "/leads", "/calling", "/followups"];
+  const nav = NAV.filter((n) => !n.perm || can(u, n.perm))
+    .filter((n) => !slim || SLIM.includes(n.href) || (["/pipeline", "/sales"].includes(n.href) && can(u, "sales.manage")));
   const initials = u.name.split(/\s+/).map((w: string) => w[0]).slice(0, 2).join("").toUpperCase();
 
   return (

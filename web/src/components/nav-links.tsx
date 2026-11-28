@@ -10,6 +10,8 @@ const svg = (d: ReactNode) => (
 // One icon per route; unknown routes fall back to a dot so a new nav item never breaks.
 const ICONS: Record<string, ReactNode> = {
   "/": svg(<><rect x="3" y="3" width="6" height="7" rx="1.2" /><rect x="11" y="3" width="6" height="4" rx="1.2" /><rect x="3" y="12" width="6" height="5" rx="1.2" /><rect x="11" y="9" width="6" height="8" rx="1.2" /></>),
+  "/work": svg(<><rect x="3.5" y="3" width="13" height="14" rx="1.6" /><path d="m7 8 1.4 1.4L11 6.8M7 13h6" /></>),
+  "/leads/distribute": svg(<><circle cx="4.5" cy="10" r="1.6" /><circle cx="15.5" cy="5" r="1.6" /><circle cx="15.5" cy="15" r="1.6" /><path d="M6 10h3c2 0 2-5 4.5-5M9 10c2 0 2 5 4.5 5" /></>),
   "/leads": svg(<><circle cx="8" cy="7" r="3" /><path d="M2.5 17c.4-3 2.7-4.7 5.5-4.7s5.1 1.7 5.5 4.7" /><path d="M14.5 5.5a2.6 2.6 0 0 1 0 5M16.5 16.5c-.2-1.8-1-3-2.3-3.8" /></>),
   "/pipeline": svg(<path d="M3 4h14l-5 6v5l-4 2v-7z" />),
   "/calling": svg(<path d="M5.5 3h2.2l1.3 3.4-1.7 1.2a9 9 0 0 0 4.1 4.1l1.2-1.7L16 11.3v2.2A1.5 1.5 0 0 1 14.5 15C8.7 15 5 11.3 5 5.5 5 4.2 5.3 3 5.5 3z" />),
@@ -26,10 +28,13 @@ const DOT = svg(<circle cx="10" cy="10" r="2" />);
 
 export function NavLinks({ items }: { items: { href: string; label: string }[] }) {
   const path = usePathname();
+  // Only the most specific match is active, so /leads/distribute lights "Split & assign" and not "Leads" as well.
+  const match = (h: string) => (h === "/" ? path === "/" : path === h || path.startsWith(h + "/"));
+  const best = items.filter((n) => match(n.href)).sort((a, b) => b.href.length - a.href.length)[0]?.href;
   return (
     <nav aria-label="Main" className="flex gap-1 overflow-x-auto px-2 pb-2 md:flex-col md:overflow-visible md:px-3 md:pb-4">
       {items.map((n) => {
-        const active = n.href === "/" ? path === "/" : path.startsWith(n.href);
+        const active = n.href === best;
         return (
           <Link key={n.href} href={n.href} aria-current={active ? "page" : undefined}
             className={`flex items-center gap-2.5 whitespace-nowrap rounded-md px-3 py-2 text-sm transition-colors ${active

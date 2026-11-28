@@ -105,6 +105,11 @@ export const PERM_LABEL: Record<Perm, string> = {
   "settings.manage": "Settings", "reports.view": "Reports & MIS", "audit.view": "Audit log", "calls.log": "Log calls",
 };
 
+/** Front-line employees: they work their own leads, so they land on "My work" and get the slim sidebar. */
+export const FIELD_ROLES: Role[] = ["calling_executive", "sales_executive"];
+/** Who may use the employee sign-in page (/employee/login): front-line staff and their team leaders. */
+export const EMPLOYEE_PORTAL_ROLES: Role[] = [...FIELD_ROLES, "team_leader"];
+
 export const ROLE_LABEL: Record<Role, string> = {
   super_admin: "Super Admin", admin: "Admin", sales_manager: "Sales Manager", team_leader: "Team Leader",
   calling_executive: "Calling Executive", sales_executive: "Sales Executive", marketing_manager: "Marketing Manager", viewer: "Viewer / Management",
