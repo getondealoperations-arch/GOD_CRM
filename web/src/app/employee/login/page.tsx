@@ -57,6 +57,7 @@ export default async function EmployeeLogin({ searchParams }: PageProps<"/employ
           <div><label className="label" htmlFor="password">Password</label><input id="password" name="password" type="password" required className="input py-2" autoComplete="current-password" /></div>
           <button className="btn w-full py-2">Sign in</button>
           <p className="text-center text-sm text-slate-500">New here? <Link href="/employee/signup" className="link">Request access</Link></p>
+          <p className="text-center text-sm text-slate-500">On your phone? <Link href="/download" className="link">Get the app</Link></p>
           <p className="text-center text-sm text-slate-500">Manager or admin? <Link href="/login" className="link">Sign in here</Link></p>
         </form>
       </section>
