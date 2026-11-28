@@ -6,7 +6,7 @@ import { filterQuery, leadWhere, type SP } from "@/lib/filters";
 import { inr, pct, ratio } from "@/lib/metrics";
 import { aggregate, dateRange, QUALIFIED_SQL, withRange } from "@/lib/reports";
 import { FilterBar } from "@/components/filter-bar";
-import { num, Stat } from "@/components/ui";
+import { Empty, fmtDay, num, Stat } from "@/components/ui";
 
 export default async function Dashboard({ searchParams }: PageProps<"/">) {
   const u = await requireUser();
@@ -91,13 +91,26 @@ export default async function Dashboard({ searchParams }: PageProps<"/">) {
 
       <section className="grid gap-4 lg:grid-cols-2">
         <div className="card">
-          <h2 className="h2">Leads per day</h2>
-          <div className="flex h-40 items-end gap-0.5">
-            {daily.map((d) => (
-              <Link key={d.d} href={link({ from: d.d, to: d.d })} title={`${d.d}: ${d.n}`} aria-label={`${d.d}: ${d.n} leads`}
-                className="flex-1 rounded-t bg-indigo-400 hover:bg-indigo-600" style={{ height: `${(Number(d.n) / maxDay) * 100}%` }} />
-            ))}
+          <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+            <h2 className="h2">Leads per day</h2>
+            {daily.length > 0 && <span className="text-xs text-slate-500">Peak {num(maxDay)} on {fmtDay(String(daily.find((d) => Number(d.n) === maxDay)?.d))}</span>}
           </div>
+          {daily.length ? (
+            <>
+              {/* Bars share the width but never grow past 3rem, so one day of data is one bar, not a block that fills the card. */}
+              <div className="flex h-40 items-end gap-1 border-b border-slate-200">
+                {daily.map((d) => (
+                  <Link key={String(d.d)} href={link({ from: d.d, to: d.d })} title={`${d.d}: ${d.n}`} aria-label={`${d.d}: ${d.n} leads`}
+                    className="group flex h-full min-w-px max-w-12 flex-1 items-end">
+                    <span className="block w-full rounded-t bg-indigo-400 transition-colors group-hover:bg-indigo-600" style={{ height: `${Math.max(3, (Number(d.n) / maxDay) * 100)}%` }} />
+                  </Link>
+                ))}
+              </div>
+              <div className="mt-1.5 flex justify-between text-xs text-slate-500">
+                <span>{fmtDay(String(daily[0].d))}</span>{daily.length > 1 && <span>{fmtDay(String(daily[daily.length - 1].d))}</span>}
+              </div>
+            </>
+          ) : <Empty>No leads were created in this date range.</Empty>}
         </div>
         <div className="card">
           <h2 className="h2">Pipeline by stage</h2>

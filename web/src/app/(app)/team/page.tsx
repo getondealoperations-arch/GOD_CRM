@@ -78,12 +78,12 @@ export default async function Team() {
                 <div className="flex flex-wrap items-end gap-2">
                   <form action={approveAccessRequest} className="flex flex-wrap items-end gap-2">
                     <input type="hidden" name="email" value={r.email} />
-                    <label className="text-xs">Role
-                      <select name="role" defaultValue="calling_executive" className="input w-auto">
+                    <label className="flex flex-col gap-1 text-xs font-medium text-slate-600">Role
+                      <select name="role" defaultValue="calling_executive" className="input w-auto font-normal text-slate-900">
                         {(["calling_executive", "sales_executive", "team_leader"] as Role[]).map((x) => <option key={x} value={x}>{ROLE_LABEL[x]}</option>)}
                       </select></label>
-                    <label className="text-xs">Team
-                      <select name="team_id" defaultValue="" className="input w-auto"><option value="">No team</option>{teams.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}</select></label>
+                    <label className="flex flex-col gap-1 text-xs font-medium text-slate-600">Team
+                      <select name="team_id" defaultValue="" className="input w-auto font-normal text-slate-900"><option value="">No team</option>{teams.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}</select></label>
                     <button className="btn">Approve</button>
                   </form>
                   <form action={rejectAccessRequest}><input type="hidden" name="email" value={r.email} /><button className="btn-ghost">Reject</button></form>
@@ -98,11 +98,12 @@ export default async function Team() {
         <table className="tbl">
           <thead><tr><th>Employee</th><th>Role</th><th>Team / reports to</th><th>Status</th><th>Assigned today (cap)</th><th>Calls today / target</th><th>Talk</th>
             <th>Follow-ups done / target</th><th>Overdue</th><th>Conversions / target</th><th>Open leads</th></tr></thead>
-          <tbody>{users.map((x) => (
-            <tr key={x.id} className={x.active ? "" : "opacity-50"}>
+          {users.map((x) => (
+            <tbody key={x.id}>
+            <tr className={x.active ? "" : "opacity-50"}>
               <td>
                 <div className="font-medium">{x.name}</div><div className="text-xs text-slate-400">{x.email}</div>
-                {manage && (u.role === "super_admin" || x.role !== "super_admin") && <details><summary className="cursor-pointer text-xs text-indigo-600">edit</summary>{userForm(x as never)}</details>}
+                {manage && (u.role === "super_admin" || x.role !== "super_admin") && <details data-edit><summary className="cursor-pointer text-xs text-indigo-600">edit</summary></details>}
                 {can(u, "lead.assign") && x.total_leads > 0 && (
                   <details><summary className="cursor-pointer text-xs text-indigo-600">reassign open leads</summary>
                     <form action={reassignOpenLeads} className="flex gap-1 p-1">
@@ -123,7 +124,16 @@ export default async function Team() {
               <td>{vs(x.conv_today, x.target_conversions)}</td>
               <td><Link className="link" href={`/leads?owner=${x.id}&conversion=open`}>{x.total_leads}</Link></td>
             </tr>
-          ))}</tbody>
+            {manage && (u.role === "super_admin" || x.role !== "super_admin") && (
+              <tr className="edit-row">
+                <td colSpan={11} className="bg-slate-50 p-0">
+                  {/* sticky + a viewport-based width keeps the form on screen when the table scrolls sideways on a phone */}
+                  <div className="sticky left-0 w-[calc(100vw-3rem)] max-w-5xl p-3 md:w-[calc(100vw-19rem)]">{userForm(x as never)}</div>
+                </td>
+              </tr>
+            )}
+            </tbody>
+          ))}
         </table>
       </div>
 
@@ -131,7 +141,8 @@ export default async function Team() {
 
       <section className="card">
         <h2 className="h2">Teams & departments</h2>
-        <table className="tbl mb-3">
+        <div className="mb-3 overflow-x-auto">
+        <table className="tbl">
           <thead><tr><th>Team</th><th>Department</th><th>Leader</th><th>Members</th>{manage && <th>Edit</th>}</tr></thead>
           <tbody>{teams.map((t) => (
             <tr key={t.id}><td>{t.name}</td><td>{t.department}</td><td>{t.leader ?? "—"}</td><td>{t.members}</td>
@@ -145,6 +156,7 @@ export default async function Team() {
             </tr>
           ))}</tbody>
         </table>
+        </div>
         {manage && (
           <form action={saveTeam} className="flex flex-wrap gap-2">
             <input name="name" placeholder="New team name" required className="input w-48" aria-label="Team name" />
