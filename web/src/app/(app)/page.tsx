@@ -42,26 +42,37 @@ export default async function Dashboard({ searchParams }: PageProps<"/">) {
     <>
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h1 className="h1">Dashboard</h1>
-        <span className="text-sm text-slate-500">{from} → {to}</span>
+        <span className="text-sm text-slate-500">{from} to {to}</span>
       </div>
       <FilterBar sp={sp} fields={["date", "campaign", "source", "category", "city", "team", "owner", "stage"]} />
 
-      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
-        <Stat label="Total leads" value={num(l.total)} href={link({})} />
-        <Stat label="Today's leads" value={num(l.today)} />
-        <Stat label="Assigned" value={num(l.assigned)} />
-        <Stat label="Unassigned" value={num(l.unassigned)} href={link({ owner: "none" })} />
-        <Stat label="Contacted leads" value={num(l.contacted)} />
-        <Stat label="Calls made" value={num(c.calls)} sub={`${num(c.connected)} connected · ${num(Number(c.calls) - Number(c.connected))} not connected`} />
-        <Stat label="Pending follow-ups" value={num(f.pending)} href="/followups?tab=upcoming" sub={`${num(f.today)} due today`} />
-        <Stat label="Overdue follow-ups" value={<span className={Number(f.overdue) ? "text-red-600" : ""}>{num(f.overdue)}</span>} href="/followups?tab=overdue" />
-        <Stat label="Interested" value={num(l.interested)} />
-        <Stat label="Qualified" value={num(l.qualified)} />
-        <Stat label="Converted" value={num(l.converted)} href={link({ conversion: "converted" })} />
-        <Stat label="Lost" value={num(l.lost)} href={link({ conversion: "lost" })} />
+      <section aria-labelledby="g-leads">
+        <h2 id="g-leads" className="h2">Leads</h2>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          <Stat label="Total leads" value={num(l.total)} href={link({})} />
+          <Stat label="Today's leads" value={num(l.today)} />
+          <Stat label="Assigned" value={num(l.assigned)} />
+          <Stat label="Unassigned" value={num(l.unassigned)} href={link({ owner: "none" })} />
+          <Stat label="Contacted" value={num(l.contacted)} />
+          <Stat label="Interested" value={num(l.interested)} />
+          <Stat label="Qualified" value={num(l.qualified)} />
+          <Stat label="Converted" value={num(l.converted)} href={link({ conversion: "converted" })} />
+          <Stat label="Lost" value={num(l.lost)} href={link({ conversion: "lost" })} />
+        </div>
       </section>
 
-      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+      <section aria-labelledby="g-calls">
+        <h2 id="g-calls" className="h2">Calling and follow-ups</h2>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <Stat label="Calls made" value={num(c.calls)} sub={`${num(c.connected)} connected, ${num(Number(c.calls) - Number(c.connected))} not connected`} />
+          <Stat label="Pending follow-ups" value={num(f.pending)} href="/followups?tab=upcoming" sub={`${num(f.today)} due today`} />
+          <Stat label="Overdue follow-ups" value={<span className={Number(f.overdue) ? "text-red-600" : ""}>{num(f.overdue)}</span>} href="/followups?tab=overdue" />
+        </div>
+      </section>
+
+      <section aria-labelledby="g-money">
+        <h2 id="g-money" className="h2">Revenue and marketing</h2>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         <Stat label="Total sales (booked)" value={inr(k.revenue)} sub={`Gross profit ${inr(k.grossProfit)}`} />
         <Stat label="Collected revenue" value={inr(k.collected)} />
         <Stat label="Pending payments" value={inr(pending.amt)} href="/sales?status=open" />
@@ -73,6 +84,7 @@ export default async function Dashboard({ searchParams }: PageProps<"/">) {
         <Stat label="Marketing ROI" value={pct(k.roi)} sub="on gross profit" />
         <Stat label="Predicted conversions" value={num(Math.round(Number(fc.conv)))} sub={`from ${num(fc.open_leads)} open leads`} href="/reports?report=forecast" />
         <Stat label="Forecast revenue" value={inr(Number(fc.rev))} sub="win probability × expected value" href="/reports?report=forecast" />
+        </div>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">

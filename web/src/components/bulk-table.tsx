@@ -46,7 +46,7 @@ export function BulkTable({ rows, users, stages, perms, priorities }: {
           <thead>
             <tr>
               {canBulk && <th><input type="checkbox" aria-label="Select all" checked={all} onChange={() => setSel(all ? new Set() : new Set(rows.map((r) => r.id)))} /></th>}
-              <th>Lead</th><th>Mobile</th><th>Business / city</th><th>Source / campaign</th><th>Status</th><th>Owner</th><th>Priority</th>
+              <th className="max-md:sticky max-md:left-0 max-md:z-[1]">Lead</th><th>Mobile</th><th>Business / city</th><th>Source / campaign</th><th>Status</th><th>Owner</th><th>Priority</th>
               <th title="Lead score 0–100 · predicted win %">Score</th><th>Calls</th><th>Next follow-up</th><th>Created</th>
             </tr>
           </thead>
@@ -54,7 +54,7 @@ export function BulkTable({ rows, users, stages, perms, priorities }: {
             {rows.map((r) => (
               <tr key={r.id}>
                 {canBulk && <td><input type="checkbox" name="ids" value={r.id} checked={sel.has(r.id)} onChange={() => toggle(r.id)} aria-label={`Select ${r.name}`} /></td>}
-                <td><Link className="link font-medium" href={`/leads/${r.id}`}>{r.name}</Link><div className="text-xs text-slate-400">{r.lead_code}{r.tags ? ` · ${r.tags}` : ""}</div></td>
+                <td className="max-md:sticky max-md:left-0 max-md:z-[1] max-md:bg-surface max-md:shadow-[1px_0_0_var(--color-slate-200)]"><Link className="link font-medium" href={`/leads/${r.id}`}>{r.name}</Link><div className="text-xs text-slate-400">{r.lead_code}{r.tags ? ` · ${r.tags}` : ""}</div></td>
                 <td className="whitespace-nowrap"><a className="link" href={`tel:${r.mobile}`}>{r.mobile}</a></td>
                 <td>{r.business_name ?? "—"}<div className="text-xs text-slate-400">{r.city}</div></td>
                 <td>{r.source}<div className="text-xs text-slate-400">{r.campaign_name}</div></td>

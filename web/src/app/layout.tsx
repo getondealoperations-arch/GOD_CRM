@@ -1,11 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Bricolage_Grotesque, Instrument_Sans } from "next/font/google";
 import { cookies } from "next/headers";
 import Script from "next/script";
 import "./globals.css";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+const body = Instrument_Sans({ variable: "--font-body", subsets: ["latin"] });
+const heading = Bricolage_Grotesque({ variable: "--font-heading", subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "GetOnDeal CRM",
@@ -19,7 +19,7 @@ const systemTheme = `if(window.matchMedia("(prefers-color-scheme: dark)").matche
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const theme = (await cookies()).get("theme")?.value;
   return (
-    <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} h-full antialiased ${theme === "dark" ? "dark" : ""}`}>
+    <html lang="en" suppressHydrationWarning className={`${body.variable} ${heading.variable} h-full antialiased ${theme === "dark" ? "dark" : ""}`}>
       <body className="min-h-full font-sans">
         {!theme && <Script id="system-theme" strategy="beforeInteractive">{systemTheme}</Script>}
         {children}

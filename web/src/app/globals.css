@@ -2,34 +2,61 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-heading);
 }
 
+/* Light theme, taken from the official GetOnDeal logo: navy #021d52 and orange #fc5d01.
+   The accent (the "indigo" scale) is navy; orange is reserved for highlights (see --color-brand).
+   Pages use indigo-* / slate-* utilities, so re-pointing the variables restyles every page. */
 @theme {
   --color-surface: #ffffff;
-  --color-page: #f6f7f9;
+  --color-page: #f3f5f9;
+  --color-ink: #021d52;
+  --color-brand: #fc5d01;
+
+  --color-slate-50: #f6f8fb;
+  --color-slate-100: #eef1f6;
+  --color-slate-200: #e0e5ee;
+  --color-slate-300: #c9d1df;
+  --color-slate-400: #8f9bb2;
+  --color-slate-500: #5d6b86;
+  --color-slate-600: #46536d;
+  --color-slate-700: #323f5a;
+  --color-slate-800: #1c2a47;
+  --color-slate-900: #0a1633;
+
+  --color-indigo-50: #eaeffa;
+  --color-indigo-100: #d5dff5;
+  --color-indigo-300: #8da4de;
+  --color-indigo-400: #5a79cb;
+  --color-indigo-500: #2d4fb0;
+  --color-indigo-600: #0f2f80;
+  --color-indigo-700: #021d52;
 }
 
 /* Dark mode: Tailwind utilities read these variables, so swapping them restyles every page. */
 .dark {
   color-scheme: dark;
-  --color-surface: #131b2b;
-  --color-page: #0b1120;
-  --color-slate-50: #1a2335;
-  --color-slate-100: #1f2a3d;
-  --color-slate-200: #2b3649;
-  --color-slate-300: #3b475c;
-  --color-slate-400: #6b7a90;
-  --color-slate-500: #94a3b8;
-  --color-slate-600: #a9b5c6;
-  --color-slate-700: #cbd5e1;
-  --color-slate-800: #e2e8f0;
-  --color-slate-900: #f1f5f9;
-  --color-indigo-50: #1e1b4b;
-  --color-indigo-100: #312e81;
-  --color-indigo-600: #6366f1;
-  --color-indigo-700: #a5b4fc;
+  --color-surface: #0f1a33;
+  --color-page: #081125;
+  --color-slate-50: #16223f;
+  --color-slate-100: #1b2849;
+  --color-slate-200: #28365a;
+  --color-slate-300: #38486f;
+  --color-slate-400: #6b7ba0;
+  --color-slate-500: #93a2c4;
+  --color-slate-600: #a8b5d2;
+  --color-slate-700: #c8d1e6;
+  --color-slate-800: #e0e6f3;
+  --color-slate-900: #f0f3fa;
+  --color-indigo-50: #14204a;
+  --color-indigo-100: #1f3070;
+  --color-indigo-300: #4c68c0;
+  --color-indigo-400: #5a79d8;
+  --color-indigo-500: #4a69d0;
+  --color-indigo-600: #3556c0;
+  --color-indigo-700: #a9bdf5;
   --color-red-50: #2a1215;
   --color-red-100: #3b1519;
   --color-red-200: #5c1d22;
@@ -47,24 +74,40 @@
   --color-blue-700: #93c5fd;
 }
 
+/* A bare `grid` gets one column that may shrink. Without this a wide table or input stretches the
+   implicit auto column past the phone viewport. Base layer, so every sm:/lg:grid-cols-* still wins. */
+@layer base {
+  .grid { grid-template-columns: minmax(0, 1fr); }
+}
+
 body {
   background: var(--color-page);
   color: var(--color-slate-900);
+  font-feature-settings: "tnum" 1, "cv11" 1;
+}
+
+/* Keyboard focus is always visible; mouse focus on inputs uses the ring below instead. */
+:focus-visible { outline: 2px solid var(--color-indigo-500); outline-offset: 2px; }
+::selection { background: var(--color-indigo-100); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }
 
 @layer components {
-  .card { @apply rounded-xl border border-slate-200 bg-surface p-4 shadow-sm; }
-  .btn { @apply inline-flex items-center justify-center gap-1 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50 cursor-pointer; }
-  .btn-ghost { @apply inline-flex items-center justify-center gap-1 rounded-lg border border-slate-300 bg-surface px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 cursor-pointer; }
-  .btn-danger { @apply inline-flex items-center justify-center rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-500 cursor-pointer; }
-  .input { @apply w-full rounded-lg border border-slate-300 bg-surface px-2.5 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100; }
-  .label { @apply mb-1 block text-xs font-medium text-slate-500; }
+  .card { @apply rounded-lg border border-slate-200 bg-surface p-4; }
+  .btn { @apply inline-flex items-center justify-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-indigo-700 active:translate-y-px disabled:opacity-50 cursor-pointer; }
+  .btn-ghost { @apply inline-flex items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-surface px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50 active:translate-y-px cursor-pointer; }
+  .btn-danger { @apply inline-flex items-center justify-center gap-1.5 rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-red-500 active:translate-y-px cursor-pointer; }
+  .input { @apply w-full rounded-md border border-slate-300 bg-surface px-2.5 py-1.5 text-sm text-slate-900 outline-none transition-shadow placeholder:text-slate-400 focus:border-indigo-500 focus:ring-3 focus:ring-indigo-100; }
+  .label { @apply mb-1 block text-xs font-medium text-slate-600; }
   .tbl { @apply w-full text-left text-sm; }
-  .tbl th { @apply border-b border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500 whitespace-nowrap; }
-  .tbl td { @apply border-b border-slate-100 px-3 py-2 align-top; }
-  .tbl tr:hover td { @apply bg-slate-50/60; }
+  .tbl th { @apply border-b border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-medium text-slate-500 whitespace-nowrap; }
+  .tbl td { @apply border-b border-slate-100 px-3 py-2.5 align-top; }
+  .tbl tbody tr:last-child td { @apply border-b-0; }
+  .tbl tr:hover td { @apply bg-slate-50/70; }
   .badge { @apply inline-block rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap; }
-  .h1 { @apply text-xl font-semibold text-slate-900; }
-  .h2 { @apply text-sm font-semibold text-slate-700 mb-3; }
-  .link { @apply text-indigo-600 hover:underline; }
+  .h1 { @apply font-display text-2xl font-semibold tracking-tight text-slate-900; }
+  .h2 { @apply mb-3 text-sm font-semibold text-slate-800; }
+  .link { @apply text-indigo-600 underline-offset-2 hover:underline; }
 }

@@ -13,12 +13,14 @@ export const secondsSince = (iso: string) => Math.round((Date.now() - Date.parse
 export function Stat({ label, value, href, sub }: { label: string; value: ReactNode; href?: string; sub?: ReactNode }) {
   const body = (
     <>
-      <div className="text-xs font-medium text-slate-500">{label}</div>
-      <div className="mt-1 text-xl font-semibold tabular-nums text-slate-900">{value}</div>
-      {sub && <div className="text-xs text-slate-500">{sub}</div>}
+      <div className="text-[13px] text-slate-500">{label}</div>
+      <div className="mt-1 font-display text-2xl font-semibold leading-none tracking-tight tabular-nums text-slate-900">{value}</div>
+      {sub && <div className="mt-1.5 text-xs leading-snug text-slate-500">{sub}</div>}
     </>
   );
-  return href ? <Link href={href} className="card block p-3 hover:border-indigo-300">{body}</Link> : <div className="card p-3">{body}</div>;
+  return href
+    ? <Link href={href} className="card block p-3.5 transition-colors hover:border-indigo-400 hover:bg-indigo-50/40">{body}</Link>
+    : <div className="card p-3.5">{body}</div>;
 }
 
 export function StageBadge({ name, color }: { name: string; color?: string }) {
@@ -33,15 +35,15 @@ export function Pager({ page, total, perPage, query }: { page: number; total: nu
   const href = (p: number) => `?${query}${query ? "&" : ""}page=${p}`;
   return (
     <div className="flex items-center justify-between text-sm text-slate-600">
-      <span>{num(total)} records · page {page} of {pages}</span>
+      <span>{num(total)} records, page {page} of {pages}</span>
       <div className="flex gap-2">
-        {page > 1 && <Link className="btn-ghost" href={href(page - 1)}>← Prev</Link>}
-        {page < pages && <Link className="btn-ghost" href={href(page + 1)}>Next →</Link>}
+        {page > 1 && <Link className="btn-ghost" href={href(page - 1)}>Previous</Link>}
+        {page < pages && <Link className="btn-ghost" href={href(page + 1)}>Next</Link>}
       </div>
     </div>
   );
 }
 
 export function Empty({ children }: { children: ReactNode }) {
-  return <div className="p-6 text-center text-sm text-slate-500">{children}</div>;
+  return <div className="mx-auto max-w-sm p-8 text-center text-sm leading-relaxed text-slate-500">{children}</div>;
 }

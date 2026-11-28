@@ -2,6 +2,7 @@ import { getPriorities } from "@/lib/leads";
 import Link from "next/link";
 import { q } from "@/lib/db";
 import { str, type SP } from "@/lib/filters";
+import { FilterToggle } from "@/components/filter-toggle";
 
 type Field = "date" | "campaign" | "source" | "category" | "city" | "team" | "owner" | "stage" | "priority" | "q" | "conversion";
 type Opt = { id: string | number; name: string };
@@ -30,7 +31,10 @@ export async function FilterBar({ sp, fields, keep = [] }: { sp: SP; fields: Fie
     </div>
   );
 
+  const active = ["q", "from", "to", "campaign", "source", "category", "city", "team", "owner", "stage", "priority", "conversion"].filter((k) => v(k)).length;
+
   return (
+    <FilterToggle active={active}>
     <form className="card grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6 xl:grid-cols-8">
       {keep.map((k) => v(k) && <input key={k} type="hidden" name={k} value={v(k)} />)}
       {has("q") && <div className="col-span-2"><label className="label" htmlFor="f-q">Search</label><input id="f-q" name="q" defaultValue={v("q")} className="input" placeholder="Name, mobile, business, ID" /></div>}
@@ -52,5 +56,6 @@ export async function FilterBar({ sp, fields, keep = [] }: { sp: SP; fields: Fie
         <Link href={keep.length ? `?${keep.filter(v).map((k) => `${k}=${encodeURIComponent(v(k))}`).join("&")}` : "?"} className="btn-ghost">Reset</Link>
       </div>
     </form>
+    </FilterToggle>
   );
 }
