@@ -6,6 +6,7 @@ The running app is the clickable prototype (`npm run db:demo && npm run dev`, lo
 |---|---|---|---|
 | Login | `/login` | All | Email + password |
 | Employee login | `/employee/login` | Calling/sales executives, team leaders | Separate sign-in for field staff; managers and admins are sent to `/login`. Lands on My work |
+| Request access | `/employee/signup` | Anyone (public) | Name, email, phone, password. Creates no account: stores a pending request (password hashed) and notifies admins. An admin approves or rejects it under **Team → Access requests**, choosing the role (employee roles only) and team. Needs no database migration |
 | My work | `/work` | Everyone who works leads | Today's targets (calls, follow-ups, conversions), next calls in queue order, follow-ups due, newly assigned leads. Calling and sales executives land here instead of the Dashboard and get a slim sidebar |
 | Split and assign | `/leads/distribute` | Assign perm | Pick a pool of unassigned leads (campaign, source, category, city), pick available employees, preview the equal split, apply. Best-scored leads are dealt first; one summary notification per employee; audited as `split_assign` |
 | Dashboard | `/` | All | All §3 KPIs incl. predicted conversions & forecast revenue; 8 filters; leads/day chart; stage funnel; drill-down |

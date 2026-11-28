@@ -21,7 +21,7 @@ async function employeeLogin(f: FormData) {
 
 export default async function EmployeeLogin({ searchParams }: PageProps<"/employee/login">) {
   if (await currentUser()) redirect("/work");
-  const { error } = await searchParams;
+  const { error, requested } = await searchParams;
   return (
     <main className="grid min-h-screen lg:grid-cols-[1.1fr_1fr]">
       <section className="relative hidden flex-col justify-between overflow-hidden bg-ink p-12 lg:flex">
@@ -51,10 +51,12 @@ export default async function EmployeeLogin({ searchParams }: PageProps<"/employ
           </div>
           {error === "portal"
             ? <p role="alert" className="rounded-md border border-amber-100 bg-amber-50 p-2.5 text-sm text-amber-800">This sign-in is for employees. Managers and admins sign in on the <Link href="/login" className="font-medium underline">main sign-in page</Link>.</p>
-            : error && <p role="alert" className="rounded-md border border-red-200 bg-red-50 p-2.5 text-sm text-red-700">Invalid email or password. Check both and try again.</p>}
+            : error ? <p role="alert" className="rounded-md border border-red-200 bg-red-50 p-2.5 text-sm text-red-700">Invalid email or password. Check both and try again. If you only just requested access, an admin still has to approve it.</p>
+            : requested && <p role="status" className="rounded-md border border-green-200 bg-green-100 p-2.5 text-sm text-green-700">Request sent. An admin will review it, and you can sign in once it is approved.</p>}
           <div><label className="label" htmlFor="email">Email</label><input id="email" name="email" type="email" required autoFocus className="input py-2" autoComplete="username" /></div>
           <div><label className="label" htmlFor="password">Password</label><input id="password" name="password" type="password" required className="input py-2" autoComplete="current-password" /></div>
           <button className="btn w-full py-2">Sign in</button>
+          <p className="text-center text-sm text-slate-500">New here? <Link href="/employee/signup" className="link">Request access</Link></p>
           <p className="text-center text-sm text-slate-500">Manager or admin? <Link href="/login" className="link">Sign in here</Link></p>
         </form>
       </section>

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { ALL, can, encrypt, endSession, hashPassword, leadScope, requireUser, type Perm, type Role, type User } from "@/lib/auth";
 import { audit, exec, getSetting, notify, one, q, setSetting } from "@/lib/db";
+import { listRequests, saveRequests } from "@/lib/access-requests";
 import {
   activity, assignLead, attributedCampaign, changeStage, createLead, findDuplicate, normMobile, pickAssignee, stageIdByName, validEmail, validMobile,
 } from "@/lib/leads";
@@ -388,6 +389,34 @@ export async function saveTeam(f: FormData) {
   if (id) await exec("UPDATE teams SET name=?, department=?, leader_id=? WHERE id=?", [s(f, "name"), s(f, "department") || null, n(f, "leader_id"), id]);
   else await exec("INSERT INTO teams (name, department, leader_id) VALUES (?,?,?)", [s(f, "name"), s(f, "department") || null, n(f, "leader_id")]);
   await audit(u.id, id ? "edit" : "create", "team", id, { name: s(f, "name") });
+  done();
+}
+
+/** Team page: turn a pending /employee/signup request into a real account, with the role and team the admin picks. */
+export async function approveAccessRequest(f: FormData) {
+  const u = await requireUser("users.manage");
+  const email = s(f, "email").toLowerCase();
+  const role = s(f, "role");
+  // A request can only ever become a front-line employee or team leader; higher roles are granted from the user form.
+  if (!["calling_executive", "sales_executive", "team_leader"].includes(role)) throw new Error("Choose a calling executive, sales executive or team leader role");
+  const list = await listRequests();
+  const r = list.find((x) => x.email === email);
+  if (!r) return done(); // already handled from another tab
+  if (!(await one("SELECT id FROM users WHERE email=?", [email]))) {
+    await exec("INSERT INTO users (name,email,password_hash,role,team_id,phone,active,available) VALUES (?,?,?,?,?,?,1,1)",
+      [r.name, r.email, r.password_hash, role, n(f, "team_id"), r.phone]);
+  }
+  await saveRequests(list.filter((x) => x.email !== email));
+  const made = await one("SELECT id FROM users WHERE email=?", [email]);
+  await audit(u.id, "approve_access", "user", made?.id ?? null, { email, role, team_id: n(f, "team_id") });
+  done();
+}
+
+export async function rejectAccessRequest(f: FormData) {
+  const u = await requireUser("users.manage");
+  const email = s(f, "email").toLowerCase();
+  await saveRequests((await listRequests()).filter((x) => x.email !== email));
+  await audit(u.id, "reject_access", "user", null, { email });
   done();
 }
 

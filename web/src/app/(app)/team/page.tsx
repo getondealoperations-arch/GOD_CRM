@@ -1,14 +1,16 @@
 import Link from "next/link";
 import { can, requireUser, ROLE_LABEL, type Role } from "@/lib/auth";
 import { q } from "@/lib/db";
-import { dur } from "@/components/ui";
-import { reassignOpenLeads, saveTeam, saveUser } from "../actions";
+import { dur, fmtDate } from "@/components/ui";
+import { listRequests } from "@/lib/access-requests";
+import { approveAccessRequest, reassignOpenLeads, rejectAccessRequest, saveTeam, saveUser } from "../actions";
 
 const ROLES = Object.keys(ROLE_LABEL) as Role[];
 
 export default async function Team() {
   const u = await requireUser("reports.view");
   const manage = can(u, "users.manage");
+  const requests = manage ? await listRequests() : [];
   const teamOnly = !can(u, "lead.view_all") ? ` WHERE us.team_id=${Number(u.team_id ?? -1)}` : "";
   const [users, teams] = await Promise.all([
     q(`SELECT us.*, t.name team, m.name manager,
@@ -59,6 +61,38 @@ export default async function Team() {
         <h1 className="h1">Team & employees</h1>
         <Link className="btn-ghost" href="/reports?report=employee">Employee performance report →</Link>
       </div>
+
+      {requests.length > 0 && (
+        <section className="card space-y-2" aria-labelledby="requests">
+          <div>
+            <h2 id="requests" className="h2 mb-0">Access requests ({requests.length})</h2>
+            <p className="text-sm text-slate-500">People who asked for an account on the employee sign-in page. They cannot sign in until you approve.</p>
+          </div>
+          <ul className="divide-y divide-slate-100">
+            {requests.map((r) => (
+              <li key={r.email} className="grid gap-3 py-3 lg:grid-cols-[1fr_auto] lg:items-end">
+                <div className="min-w-0">
+                  <div className="font-medium">{r.name}</div>
+                  <div className="truncate text-sm text-slate-500">{r.email}{r.phone ? `, ${r.phone}` : ""}, asked {fmtDate(r.requested_at)}</div>
+                </div>
+                <div className="flex flex-wrap items-end gap-2">
+                  <form action={approveAccessRequest} className="flex flex-wrap items-end gap-2">
+                    <input type="hidden" name="email" value={r.email} />
+                    <label className="text-xs">Role
+                      <select name="role" defaultValue="calling_executive" className="input w-auto">
+                        {(["calling_executive", "sales_executive", "team_leader"] as Role[]).map((x) => <option key={x} value={x}>{ROLE_LABEL[x]}</option>)}
+                      </select></label>
+                    <label className="text-xs">Team
+                      <select name="team_id" defaultValue="" className="input w-auto"><option value="">No team</option>{teams.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}</select></label>
+                    <button className="btn">Approve</button>
+                  </form>
+                  <form action={rejectAccessRequest}><input type="hidden" name="email" value={r.email} /><button className="btn-ghost">Reject</button></form>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <div className="card overflow-x-auto p-0">
         <table className="tbl">
