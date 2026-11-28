@@ -76,13 +76,20 @@ export function Importer() {
 
   return (
     <div className="space-y-4">
-      <div className="card flex flex-wrap items-end gap-3">
-        <div>
-          <label className="label" htmlFor="file">Excel (.xlsx) or CSV file</label>
-          <input id="file" type="file" accept=".csv,.xlsx" className="text-sm" onChange={(e) => { setFile(e.target.files?.[0] ?? null); setPreview(null); }} />
+      <div className="card space-y-3">
+        <div className="flex flex-wrap items-end gap-3">
+          <div>
+            <label className="label" htmlFor="file">1. Choose an Excel (.xlsx) or CSV file</label>
+            <input id="file" type="file" accept=".csv,.xlsx" onChange={(e) => { setFile(e.target.files?.[0] ?? null); setPreview(null); }}
+              className="text-sm text-slate-600 file:mr-3 file:cursor-pointer file:rounded-md file:border file:border-slate-300 file:bg-surface file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-50" />
+          </div>
+          <button className="btn disabled:cursor-not-allowed" disabled={!file || !!busy} title={file ? "" : "Choose a file first"} onClick={() => call("preview")}>
+            {busy === "preview" ? "Reading…" : "2. Upload & preview"}
+          </button>
+          {!file && <span className="text-sm text-slate-500">Choose a file first. This button switches on once you have.</span>}
+          {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
         </div>
-        <button className="btn" disabled={!file || !!busy} onClick={() => call("preview")}>{busy === "preview" ? "Reading…" : "Upload & preview"}</button>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        <p className="text-xs text-slate-500">The first row of the file must be the column headings. Nothing is saved until you check the column mapping, validate and click Import.</p>
       </div>
 
       {preview && !result && (
