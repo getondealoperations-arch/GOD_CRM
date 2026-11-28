@@ -7,7 +7,7 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test src/lib/metrics.test.ts src/lib/rules.test.ts",
+    "test": "node --test src/lib/metrics.test.ts src/lib/rules.test.ts src/lib/whatsapp-pitch.test.ts",
     "db:setup": "node --env-file-if-exists=.env.local scripts/setup-db.mjs",
     "db:demo": "node --env-file-if-exists=.env.local scripts/setup-db.mjs --demo",
     "db:backup": "node --env-file-if-exists=.env.local scripts/backup.mjs",

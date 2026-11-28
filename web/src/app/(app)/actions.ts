@@ -727,6 +727,13 @@ export async function clickToCallAction(leadId: number): Promise<{ callId?: numb
   try { return { callId: (await clickToCall(leadId, u)).callId }; } catch (e) { return { error: (e as Error).message }; }
 }
 
+/** The agent opened WhatsApp with the Get On Deal intro for this lead (call panel). Recorded on the lead's timeline; opening is not the same as sent. */
+export async function logWhatsAppOpened(leadId: number) {
+  const u = await requireUser("calls.log");
+  await leadFor(u, leadId); // throws unless this lead is within the user's scope
+  await activity(leadId, u.id, "message", "WhatsApp opened with the Get On Deal vendor intro");
+}
+
 export async function sendLeadWhatsApp(f: FormData) {
   const u = await requireUser("lead.edit");
   const id = Number(s(f, "lead_id"));
