@@ -7,7 +7,7 @@ import { connectablePages } from "@/lib/meta";
 import { listBackups } from "@/lib/backup";
 import { fmtDate, secondsSince } from "@/components/ui";
 import {
-  backupNow, deleteStage, metaOp, recomputeScoresAction, regenerateApiKey, retentionNow, saveChannels, saveMeta, savePermissions, saveRule,
+  backupNow, clearSampleData, deleteStage, metaOp, recomputeScoresAction, regenerateApiKey, retentionNow, saveChannels, saveMeta, savePermissions, saveRule,
   saveSettings, saveStage, saveStageRules, saveTelephony, testChannel,
 } from "../actions";
 
@@ -33,7 +33,8 @@ const stored = (v: string) => (v ? "✅ stored (encrypted)" : "— not set");
 
 export default async function Settings({ searchParams }: PageProps<"/settings">) {
   const me = await requireUser("settings.manage");
-  const tab = str(((await searchParams) as SP).tab) || "general";
+  const sp = (await searchParams) as SP;
+  const tab = str(sp.tab) || "general";
   const s = Object.fromEntries(await Promise.all(KEYS.map(async (k) => [k, await getSetting(k)])));
   const h = await headers();
   const origin = s.app_url || `${h.get("x-forwarded-proto") ?? "http"}://${h.get("host")}`;
@@ -52,7 +53,7 @@ export default async function Settings({ searchParams }: PageProps<"/settings">)
       {tab === "permissions" && <Permissions />}
       {tab === "integrations" && <Integrations s={s} origin={origin} />}
       {tab === "notifications" && <Notifications s={s} origin={origin} />}
-      {tab === "data" && <Data s={s} superAdmin={me.role === "super_admin"} />}
+      {tab === "data" && <Data s={s} superAdmin={me.role === "super_admin"} cleared={str(sp.cleared)} />}
       {tab === "system" && <System s={s} />}
     </>
   );
@@ -376,7 +377,7 @@ async function Notifications({ s, origin }: { s: Record<string, string>; origin:
   );
 }
 
-async function Data({ s, superAdmin }: { s: Record<string, string>; superAdmin: boolean }) {
+async function Data({ s, superAdmin, cleared }: { s: Record<string, string>; superAdmin: boolean; cleared: string }) {
   const backups = await listBackups();
   return (
     <>
@@ -428,6 +429,29 @@ async function Data({ s, superAdmin }: { s: Record<string, string>; superAdmin: 
           {s.scoring_last && <span className="text-sm">{s.scoring_last}</span>}
         </div>
       </section>
+
+      {superAdmin && (
+        <section className="card space-y-3 border-red-200" aria-labelledby="clear-data">
+          <div>
+            <h2 id="clear-data" className="h2 mb-1 text-red-700">Remove sample data</h2>
+            <p className="max-w-3xl text-sm text-slate-600">
+              For going live: deletes <strong>every lead, call, follow-up, sale, payment, campaign, notification and background job</strong>, then restarts lead numbering at GOD-000001.
+              Logins, teams, pipeline stages, settings and the audit log are kept. This cannot be undone, so a backup is taken first.
+            </p>
+          </div>
+          {cleared === "wrong" && <p role="alert" className="rounded-md border border-red-200 bg-red-50 p-2.5 text-sm text-red-700">The confirmation phrase did not match, so nothing was deleted.</p>}
+          {cleared === "nobackup" && <p role="alert" className="rounded-md border border-amber-100 bg-amber-50 p-2.5 text-sm text-amber-800">The automatic backup could not be made, so nothing was deleted. Export the database from phpMyAdmin, then tick &ldquo;I already have my own backup&rdquo; and try again.</p>}
+          {cleared && !["wrong", "nobackup"].includes(cleared) && <p role="status" className="rounded-md border border-green-200 bg-green-100 p-2.5 text-sm text-green-700">Done. {cleared} lead{cleared === "1" ? "" : "s"} and all related records were removed. You can import your real data now.</p>}
+          <form action={clearSampleData} className="grid max-w-xl gap-3">
+            <label className="flex items-start gap-2 text-sm"><input type="checkbox" name="own_backup" className="mt-1" /> I already have my own backup (skip the automatic one)</label>
+            <div>
+              <label className="label" htmlFor="confirm">Type <code>DELETE ALL LEADS</code> to confirm</label>
+              <input id="confirm" name="confirm" required autoComplete="off" placeholder="DELETE ALL LEADS" className="input" />
+            </div>
+            <div><button className="btn-danger">Remove all leads and sales data</button></div>
+          </form>
+        </section>
+      )}
     </>
   );
 }

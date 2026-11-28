@@ -613,6 +613,38 @@ export async function backupNow() {
   done();
 }
 
+// Operational data only, children before parents (foreign keys). Users, teams, stages, settings, assignment rules,
+// saved views and the audit / error / sync logs are never touched.
+const SAMPLE_DATA_TABLES = ["payments", "sales", "calls", "followups", "stage_history", "lead_activities", "lead_touches", "leads",
+  "spend_entries", "campaigns", "notifications", "jobs", "message_logs"] as const;
+
+/** Settings → Backups & data: remove every lead, call, follow-up, sale, payment and campaign (go-live clean-up). Super Admin only. */
+export async function clearSampleData(f: FormData) {
+  const u = await requireUser("settings.manage");
+  if (u.role !== "super_admin") throw new Error("Only a super admin can remove data");
+  if (s(f, "confirm") !== "DELETE ALL LEADS") redirect("/settings?tab=data&cleared=wrong");
+
+  // A backup comes first. If it cannot be made, nothing is deleted, unless the admin says they hold their own export.
+  let backup = "skipped: admin confirmed their own backup";
+  if (f.get("own_backup") !== "on") {
+    const made = await runBackup().then((name) => ({ name }), (e: Error) => ({ error: e.message }));
+    if ("error" in made) {
+      await audit(u.id, "clear_sample_data_blocked", "system", null, { reason: made.error });
+      redirect("/settings?tab=data&cleared=nobackup");
+    }
+    backup = made.name;
+  }
+
+  const deleted: Record<string, number> = {};
+  for (const t of SAMPLE_DATA_TABLES) {
+    deleted[t] = (await exec(`DELETE FROM ${t}`)).affectedRows;
+    await exec(`ALTER TABLE ${t} AUTO_INCREMENT = 1`); // fresh numbering: the first new lead is GOD-000001
+  }
+  await audit(u.id, "clear_sample_data", "system", null, { backup, deleted });
+  done();
+  redirect(`/settings?tab=data&cleared=${deleted.leads}`);
+}
+
 export async function retentionNow() {
   const u = await requireUser("settings.manage");
   const r = await runRetention();
